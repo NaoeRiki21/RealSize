@@ -3,39 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1:1 屏幕尺寸对比工具</title>
-    <link rel="stylesheet" href="style.css">
+    <title>真机尺寸 | 你的机机到底有多大</title>
+    <style>
+        :root { --zoom: 1.0; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f5f7fa;
+            color: #1a1a1a;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 300px;
+        }
+
+        header { padding: 40px 0; text-align: center; }
+        header h1 { font-size: 2.5rem; margin: 0; color: #000; }
+
+        .panel {
+            background: #fff;
+            width: 90%;
+            max-width: 900px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e1e4e8;
+        }
+
+        /* 校准区域 */
+        .calib-area {
+            background: #f0f7ff;
+            border: 2px solid #007aff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        #ruler {
+            width: 100mm;
+            height: 40px;
+            background: #000;
+            margin: 15px auto;
+            transform: scale(var(--zoom));
+            transform-origin: center;
+            border-radius: 2px;
+        }
+
+        /* 输入布局 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .input-box { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 0.8rem; font-weight: bold; color: #666; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; }
+
+        /* 设备展示 */
+        .stage { margin-top: 60px; perspective: 1000px; }
+        #device {
+            background: #111;
+            border: 6px solid #333; /* 模拟金属边框 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: scale(var(--zoom));
+            transform-origin: top center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+        }
+
+        #screen {
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
+        }
+
+        .label-info { text-align: center; pointer-events: none; }
+    </style>
 </head>
 <body>
 
-<div class="controls">
-    <div class="control-group">
-        <label>设备分类：</label>
-        <select id="typeSelect">
-            <option value="phone">手机 (Phone)</option>
-            <option value="fold">折叠屏 (Foldable)</option>
-            <option value="tablet">平板 (Tablet)</option>
-        </select>
+<header>
+    <h1>真机尺寸</h1>
+    <p>你的机机有多大</p>
+</header>
+
+<div class="panel">
+    <div class="calib-area">
+        <label>先拿尺子量一下黑条，必须是 10cm</label>
+        <div id="ruler"></div>
+        <input type="range" id="zoom" min="0.5" max="2.5" step="0.0001" value="1.0" style="width:80%">
+        <div id="zoomVal" style="font-family:monospace; margin-top:5px;">Coefficient: 1.0000</div>
     </div>
 
-    <div class="control-group">
-        <label>选择设备：</label>
-        <select id="deviceSelect"></select>
+    <div class="grid">
+        <div class="input-box">
+            <label>预设设备</label>
+            <select id="preset">
+                <option value="custom">--- 手动档 ---</option>
+                <option value="285.4,185.4,12.4,1.6,6,4" selected>Galaxy Tab S9+ (16:10)</option>
+                <option value="326.4,208.6,14.6,1.6,8,5">Galaxy Tab S9 Ultra (16:10)</option>
+                <option value="247.6,178.5,11,1.38,18,14">iPad Pro M4 11"</option>
+                <option value="281.6,215.5,13,1.31,20,16">iPad Pro M4 13"</option>
+            </select>
+        </div>
+        <div class="input-box">
+            <label>屏幕对角线 (inch)</label>
+            <input type="number" id="diag" value="12.4">
+        </div>
+        <div class="input-box">
+            <label>比例 (1.6=16:10)</label>
+            <input type="number" id="ratio" value="1.6" step="0.01">
+        </div>
     </div>
 
-    <div class="control-group">
-        <label>屏幕缩放校准：</label>
-        <input type="range" id="zoomRange" min="50" max="150" value="100">
-        <span id="zoomVal">100%</span>
+    <div class="grid" style="margin-top:15px;">
+        <div class="input-box">
+            <label>机身宽 (mm)</label>
+            <input type="number" id="bodyW" value="285.4">
+        </div>
+        <div class="input-box">
+            <label>机身高 (mm)</label>
+            <input type="number" id="bodyH" value="185.4">
+        </div>
+        <div class="input-box">
+            <label>机身圆角 (mm)</label>
+            <input type="number" id="bR" value="6">
+        </div>
+        <div class="input-box">
+            <label>屏幕圆角 (mm)</label>
+            <input type="number" id="sR" value="4">
+        </div>
     </div>
-    
-    <button id="addBtn">添加对比</button>
-    <button id="clearBtn">清空画布</button>
 </div>
 
-<div class="canvas" id="canvas">
+<div class="stage">
+    <div id="device">
+        <div id="screen">
+            <div class="label-info">
+                <div id="size-txt" style="font-size:2rem; font-weight:900;">12.4"</div>
+                <div id="dim-txt" style="font-size:0.8rem; opacity:0.5; margin-top:8px;">---</div>
+            </div>
+        </div>
     </div>
+</div>
 
-<script src="script.js"></script>
+<script>
+    const el = (id) => document.getElementById(id);
+    const inputs = ['diag', 'ratio', 'bodyW', 'bodyH', 'bR', 'sR'];
+    
+    function refresh() {
+        const d = parseFloat(el('diag').value) || 0;
+        const r = parseFloat(el('ratio').value) || 1;
+        const bw = parseFloat(el('bodyW').value) || 0;
+        const bh = parseFloat(el('bodyH').value) || 0;
+        const br = parseFloat(el('bR').value) || 0;
+        const sr = parseFloat(el('sR').value) || 0;
+        const zoom = el('zoom').value;
+
+        // 屏幕尺寸计算
+        const hInch = d / Math.sqrt(Math.pow(r, 2) + 1);
+        const wInch = hInch * r;
+        
+        const sw = wInch * 25.4;
+        const sh = hInch * 25.4;
+
+        // 应用到 DOM
+        const dev = el('device');
+        const scr = el('screen');
+
+        dev.style.width = bw + 'mm';
+        dev.style.height = bh + 'mm';
+        dev.style.borderRadius = br + 'mm';
+
+        scr.style.width = sw + 'mm';
+        scr.style.height = sh + 'mm';
+        scr.style.borderRadius = sr + 'mm';
+
+        document.documentElement.style.setProperty('--zoom', zoom);
+        el('zoomVal').innerText = `Coefficient: ${parseFloat(zoom).toFixed(4)}`;
+        el('size-txt').innerText = d + '"';
+        el('dim-txt').innerText = `${bw}mm x ${bh}mm | R:${br}`;
+    }
+
+    el('preset').onchange = (e) => {
+        if(e.target.value === 'custom') return;
+        const [w, h, d, r, br, sr] = e.target.value.split(',').map(Number);
+        el('bodyW').value = w; el('bodyH').value = h;
+        el('diag').value = d; el('ratio').value = r;
+        el('bR').value = br; el('sR').value = sr;
+        refresh();
+    };
+
+    el('zoom').oninput = refresh;
+    inputs.forEach(id => el(id).oninput = refresh);
+
+    refresh();
+</script>
+
 </body>
 </html>
